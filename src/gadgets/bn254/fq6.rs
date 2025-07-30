@@ -7,11 +7,10 @@ use crate::{
     gadgets::{
         bigint::{self, select, BigIntWires},
         bn254::{fq::Fq, fq2::Fq2},
-    },
-    Circuit, WireId,
+    }, Circuit, Gate, WireId
 };
 
-type Fq6Components<T> = [Pair<T>; 3];
+pub type Fq6Components<T> = [Pair<T>; 3];
 
 pub struct Fq6;
 
@@ -89,10 +88,21 @@ impl Fq6 {
         format!("c0: ({c0_mask}), c1: ({c1_mask}), c2: ({c2_mask})")
     }
 
+    pub fn equal_constant(circuit: &mut Circuit, a: &Fq6Components<BigIntWires>, b: &ark_bn254::Fq6) -> WireId {
+        let u = Fq2::equal_constant(circuit, &a[0], &b.c0);
+        let v = Fq2::equal_constant(circuit, &a[1], &b.c1);
+        let w = Fq2::equal_constant(circuit, &a[2], &b.c2);
+        let x = circuit.issue_wire();
+        let y = circuit.issue_wire();
+        circuit.add_gate(Gate::and(u, v, x));
+        circuit.add_gate(Gate::and(x, w, y));
+        y
+    }
+
     pub fn add(
         circuit: &mut Circuit,
-        a: Fq6Components<BigIntWires>,
-        b: Fq6Components<BigIntWires>,
+        a: &Fq6Components<BigIntWires>,
+        b: &Fq6Components<BigIntWires>,
     ) -> Fq6Components<BigIntWires> {
         [
             Fq2::add(circuit, a[0].clone(), b[0].clone()),
@@ -101,7 +111,7 @@ impl Fq6 {
         ]
     }
 
-    pub fn neg(circuit: &mut Circuit, a: Fq6Components<BigIntWires>) -> Fq6Components<BigIntWires> {
+    pub fn neg(circuit: &mut Circuit, a: &Fq6Components<BigIntWires>) -> Fq6Components<BigIntWires> {
         [
             Fq2::neg(circuit, a[0].clone()),
             Fq2::neg(circuit, a[1].clone()),
@@ -517,7 +527,7 @@ mod tests {
         let mut circuit = Circuit::default();
         let a_wires = Fq6::new_bn(&mut circuit, true, false);
         let b_wires = Fq6::new_bn(&mut circuit, true, false);
-        let c_wires = Fq6::add(&mut circuit, a_wires.clone(), b_wires.clone());
+        let c_wires = Fq6::add(&mut circuit, &a_wires, &b_wires);
 
         // Mark outputs
         for ci in c_wires.iter() {
@@ -545,7 +555,7 @@ mod tests {
     fn test_fq6_neg() {
         let mut circuit = Circuit::default();
         let a_wires = Fq6::new_bn(&mut circuit, true, false);
-        let c_wires = Fq6::neg(&mut circuit, a_wires.clone());
+        let c_wires = Fq6::neg(&mut circuit, &a_wires);
 
         // Mark outputs
         for c_wire in &c_wires {

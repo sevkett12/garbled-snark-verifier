@@ -6,8 +6,7 @@ use crate::{
     gadgets::{
         bigint::{self, select, BigIntWires},
         bn254::{fp254impl::Fp254Impl, fq::Fq},
-    },
-    Circuit, WireId,
+    }, Circuit, Gate, WireId
 };
 
 pub type Pair<T> = (T, T);
@@ -122,6 +121,14 @@ impl Fq2 {
         let c0_mask = wires.0.to_bitmask(&get_val);
         let c1_mask = wires.1.to_bitmask(&get_val);
         format!("c0: {c0_mask}, c1: {c1_mask}")
+    }
+
+    pub fn equal_constant(circuit: &mut Circuit, a: &Pair<BigIntWires>, b: &ark_bn254::Fq2) -> WireId {
+        let u = Fq::equal_constant(circuit, &a.0, &b.c0);
+        let v = Fq::equal_constant(circuit, &a.1, &b.c1);
+        let w = circuit.issue_wire();
+        circuit.add_gate(Gate::and(u, v, w));
+        w
     }
 
     pub fn neg(circuit: &mut Circuit, a: Pair<BigIntWires>) -> Pair<BigIntWires> {
