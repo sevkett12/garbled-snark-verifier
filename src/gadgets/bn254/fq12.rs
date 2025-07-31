@@ -2,15 +2,15 @@ use ark_ff::{AdditiveGroup, Field, Fp12Config, Fp6Config, PrimeField, UniformRan
 use num_traits::Zero;
 use rand::{rng, Rng};
 
-use super::fq6::Fq6Components;
+use super::fq6::Fq6Element;
 use crate::{
     gadgets::{
         bigint::{self, select, BigIntWires},
-        bn254::{fq::Fq, fq2::{Fq2, Pair}, fq6::Fq6},
+        bn254::{fq::Fq, fq2::{Fq2, Fq2Element}, fq6::Fq6},
     }, Circuit, Gate, WireId
 };
 
-pub type Fq12Element<T> = (Fq6Components<T>, Fq6Components<T>);
+pub type Fq12Element<T> = (Fq6Element<T>, Fq6Element<T>);
 
 pub struct Fq12;
 
@@ -163,7 +163,7 @@ impl Fq12 {
         (c0, c1)
     }
 
-    pub fn mul_by_34_montgomery(circuit: &mut Circuit, a: &Fq12Element<BigIntWires>, c3: &Pair<BigIntWires>, c4: &Pair<BigIntWires>) -> Fq12Element<BigIntWires> {
+    pub fn mul_by_34_montgomery(circuit: &mut Circuit, a: &Fq12Element<BigIntWires>, c3: &Fq2Element<BigIntWires>, c4: &Fq2Element<BigIntWires>) -> Fq12Element<BigIntWires> {
         let w1 = Fq6::mul_by_01_montgomery(circuit, &a.1, c3, c4);
         let w2 = Fq6::mul_by_nonresidue(circuit, &w1);
         let new_c0 = Fq6::add(circuit, &w2, &a.0);
@@ -175,7 +175,7 @@ impl Fq12 {
         (new_c0, new_c1)
     }
 
-    pub fn mul_by_034_montgomery(circuit: &mut Circuit, a: &Fq12Element<BigIntWires>, c0: &Pair<BigIntWires>, c3: &Pair<BigIntWires>, c4: &Pair<BigIntWires>) -> Fq12Element<BigIntWires> {
+    pub fn mul_by_034_montgomery(circuit: &mut Circuit, a: &Fq12Element<BigIntWires>, c0: &Fq2Element<BigIntWires>, c3: &Fq2Element<BigIntWires>, c4: &Fq2Element<BigIntWires>) -> Fq12Element<BigIntWires> {
         let w1 = Fq6::mul_by_01_montgomery(circuit, &a.1, c3, c4);
         let w2 = Fq6::mul_by_nonresidue(circuit, &w1);
         let w3 = Fq6::mul_by_fq2_montgomery(circuit, &a.0, &c0);
@@ -188,7 +188,7 @@ impl Fq12 {
         (new_c0, new_c1)
     }
 
-    pub fn mul_by_034_constant4_montgomery(circuit: &mut Circuit, a: &Fq12Element<BigIntWires>, c0: &Pair<BigIntWires>, c3: &Pair<BigIntWires>, c4: &ark_bn254::Fq2) -> Fq12Element<BigIntWires> {
+    pub fn mul_by_034_constant4_montgomery(circuit: &mut Circuit, a: &Fq12Element<BigIntWires>, c0: &Fq2Element<BigIntWires>, c3: &Fq2Element<BigIntWires>, c4: &ark_bn254::Fq2) -> Fq12Element<BigIntWires> {
         let w1 = Fq6::mul_by_01_constant1_montgomery(circuit, &a.1, c3, c4);
         let w2 = Fq6::mul_by_nonresidue(circuit, &w1);
         let w3 = Fq6::mul_by_fq2_montgomery(circuit, &a.0, &c0);

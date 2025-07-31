@@ -9,7 +9,7 @@ use crate::{
     }, Circuit, Gate, WireId
 };
 
-pub type Pair<T> = (T, T);
+pub type Fq2Element<T> = (T, T);
 
 pub struct Fq2;
 
@@ -38,43 +38,43 @@ impl Fq2 {
         ark_bn254::Fq2::new(Fq::from_montgomery(a.c0), Fq::from_montgomery(a.c1))
     }
 
-    pub fn to_bits(u: ark_bn254::Fq2) -> Pair<Vec<bool>> {
+    pub fn to_bits(u: ark_bn254::Fq2) -> Fq2Element<Vec<bool>> {
         (Fq::to_bits(u.c0), Fq::to_bits(u.c1))
     }
 
-    pub fn from_bits(bits: Pair<Vec<bool>>) -> ark_bn254::Fq2 {
+    pub fn from_bits(bits: Fq2Element<Vec<bool>>) -> ark_bn254::Fq2 {
         ark_bn254::Fq2::new(Fq::from_bits(bits.0), Fq::from_bits(bits.1))
     }
 
-    pub fn new_bn(circuit: &mut Circuit, is_input: bool, is_output: bool) -> Pair<BigIntWires> {
+    pub fn new_bn(circuit: &mut Circuit, is_input: bool, is_output: bool) -> Fq2Element<BigIntWires> {
         (
             BigIntWires::new(circuit, Fq::N_BITS, is_input, is_output),
             BigIntWires::new(circuit, Fq::N_BITS, is_input, is_output),
         )
     }
 
-    pub fn wires_set(_u: ark_bn254::Fq2) -> Pair<Vec<WireId>> {
+    pub fn wires_set(_u: ark_bn254::Fq2) -> Fq2Element<Vec<WireId>> {
         // This is a stub - in the old API, this would create wires with values
         // In the new API, we use get_wire_bits_fn instead
         todo!("Use new_bn and get_wire_bits_fn instead")
     }
 
-    pub fn wires_set_montgomery(u: ark_bn254::Fq2) -> Pair<Vec<WireId>> {
+    pub fn wires_set_montgomery(u: ark_bn254::Fq2) -> Fq2Element<Vec<WireId>> {
         Self::wires_set(Self::as_montgomery(u))
     }
 
-    pub fn from_wires(_wires: Pair<Vec<WireId>>) -> ark_bn254::Fq2 {
+    pub fn from_wires(_wires: Fq2Element<Vec<WireId>>) -> ark_bn254::Fq2 {
         // This is a stub - in the old API, this would read wire values
         // In the new API, wire values are handled differently
         todo!("Use proper wire value extraction")
     }
 
-    pub fn from_montgomery_wires(wires: Pair<Vec<WireId>>) -> ark_bn254::Fq2 {
+    pub fn from_montgomery_wires(wires: Fq2Element<Vec<WireId>>) -> ark_bn254::Fq2 {
         Self::from_montgomery(Self::from_wires(wires))
     }
 
     pub fn get_wire_bits_fn(
-        wires: &Pair<BigIntWires>,
+        wires: &Fq2Element<BigIntWires>,
         value: &ark_bn254::Fq2,
     ) -> Result<impl Fn(WireId) -> Option<bool> + use<>, crate::gadgets::bigint::Error> {
         let (_c0_bits, _c1_bits) = Self::to_bits(*value);
@@ -89,13 +89,13 @@ impl Fq2 {
         Ok(move |wire_id| c0_fn(wire_id).or_else(|| c1_fn(wire_id)))
     }
 
-    pub fn to_bitmask(wires: &Pair<BigIntWires>, get_val: impl Fn(WireId) -> bool) -> String {
+    pub fn to_bitmask(wires: &Fq2Element<BigIntWires>, get_val: impl Fn(WireId) -> bool) -> String {
         let c0_mask = wires.0.to_bitmask(&get_val);
         let c1_mask = wires.1.to_bitmask(&get_val);
         format!("c0: {c0_mask}, c1: {c1_mask}")
     }
 
-    pub fn equal_constant(circuit: &mut Circuit, a: &Pair<BigIntWires>, b: &ark_bn254::Fq2) -> WireId {
+    pub fn equal_constant(circuit: &mut Circuit, a: &Fq2Element<BigIntWires>, b: &ark_bn254::Fq2) -> WireId {
         let u = Fq::equal_constant(circuit, &a.0, &b.c0);
         let v = Fq::equal_constant(circuit, &a.1, &b.c1);
         let w = circuit.issue_wire();
@@ -105,9 +105,9 @@ impl Fq2 {
 
     pub fn add(
         circuit: &mut Circuit,
-        a: &Pair<BigIntWires>,
-        b: &Pair<BigIntWires>,
-    ) -> Pair<BigIntWires> {
+        a: &Fq2Element<BigIntWires>,
+        b: &Fq2Element<BigIntWires>,
+    ) -> Fq2Element<BigIntWires> {
         assert_eq!(a.0.len(), Self::N_BITS / 2);
         assert_eq!(b.0.len(), Self::N_BITS / 2);
 
@@ -119,9 +119,9 @@ impl Fq2 {
 
     pub fn add_constant(
         circuit: &mut Circuit,
-        a: &Pair<BigIntWires>,
+        a: &Fq2Element<BigIntWires>,
         b: &ark_bn254::Fq2,
-    ) -> Pair<BigIntWires> {
+    ) -> Fq2Element<BigIntWires> {
         assert_eq!(a.0.len(), Self::N_BITS / 2);
         assert_eq!(a.1.len(), Self::N_BITS / 2);
 
@@ -131,7 +131,7 @@ impl Fq2 {
         )
     }
 
-    pub fn neg(circuit: &mut Circuit, a: Pair<BigIntWires>) -> Pair<BigIntWires> {
+    pub fn neg(circuit: &mut Circuit, a: Fq2Element<BigIntWires>) -> Fq2Element<BigIntWires> {
         assert_eq!(a.0.len(), Self::N_BITS / 2);
         assert_eq!(a.1.len(), Self::N_BITS / 2);
 
@@ -140,9 +140,9 @@ impl Fq2 {
 
     pub fn sub(
         circuit: &mut Circuit,
-        a: &Pair<BigIntWires>,
-        b: &Pair<BigIntWires>,
-    ) -> Pair<BigIntWires> {
+        a: &Fq2Element<BigIntWires>,
+        b: &Fq2Element<BigIntWires>,
+    ) -> Fq2Element<BigIntWires> {
         assert_eq!(a.0.len(), Self::N_BITS / 2);
         assert_eq!(a.1.len(), Self::N_BITS / 2);
         assert_eq!(b.0.len(), Self::N_BITS / 2);
@@ -154,7 +154,7 @@ impl Fq2 {
         (c0, c1)
     }
 
-    pub fn double(circuit: &mut Circuit, a: &Pair<BigIntWires>) -> Pair<BigIntWires> {
+    pub fn double(circuit: &mut Circuit, a: &Fq2Element<BigIntWires>) -> Fq2Element<BigIntWires> {
         assert_eq!(a.0.len(), Self::N_BITS / 2);
         assert_eq!(a.1.len(), Self::N_BITS / 2);
 
@@ -164,7 +164,7 @@ impl Fq2 {
         (c0, c1)
     }
 
-    pub fn half(circuit: &mut Circuit, a: &Pair<BigIntWires>) -> Pair<BigIntWires> {
+    pub fn half(circuit: &mut Circuit, a: &Fq2Element<BigIntWires>) -> Fq2Element<BigIntWires> {
         assert_eq!(a.0.len(), Self::N_BITS / 2);
         assert_eq!(a.1.len(), Self::N_BITS / 2);
 
@@ -174,7 +174,7 @@ impl Fq2 {
         (c0, c1)
     }
 
-    pub fn triple(circuit: &mut Circuit, a: &Pair<BigIntWires>) -> Pair<BigIntWires> {
+    pub fn triple(circuit: &mut Circuit, a: &Fq2Element<BigIntWires>) -> Fq2Element<BigIntWires> {
         assert_eq!(a.0.len(), Self::N_BITS / 2);
         assert_eq!(a.1.len(), Self::N_BITS / 2);
 
@@ -185,9 +185,9 @@ impl Fq2 {
 
     pub fn mul_montgomery(
         circuit: &mut Circuit,
-        a: &Pair<BigIntWires>,
-        b: &Pair<BigIntWires>,
-    ) -> Pair<BigIntWires> {
+        a: &Fq2Element<BigIntWires>,
+        b: &Fq2Element<BigIntWires>,
+    ) -> Fq2Element<BigIntWires> {
         assert_eq!(a.0.len(), Self::N_BITS / 2);
         assert_eq!(a.1.len(), Self::N_BITS / 2);
         assert_eq!(b.0.len(), Self::N_BITS / 2);
@@ -216,9 +216,9 @@ impl Fq2 {
 
     pub fn mul_by_constant_montgomery(
         circuit: &mut Circuit,
-        a: &Pair<BigIntWires>,
+        a: &Fq2Element<BigIntWires>,
         b: &ark_bn254::Fq2,
-    ) -> Pair<BigIntWires> {
+    ) -> Fq2Element<BigIntWires> {
         assert_eq!(a.0.len(), Self::N_BITS / 2);
         assert_eq!(a.1.len(), Self::N_BITS / 2);
 
@@ -241,9 +241,9 @@ impl Fq2 {
 
     pub fn mul_by_fq_montgomery(
         circuit: &mut Circuit,
-        a: &Pair<BigIntWires>,
+        a: &Fq2Element<BigIntWires>,
         b: &BigIntWires,
-    ) -> Pair<BigIntWires> {
+    ) -> Fq2Element<BigIntWires> {
         assert_eq!(a.0.len(), Self::N_BITS / 2);
         assert_eq!(a.1.len(), Self::N_BITS / 2);
         assert_eq!(b.len(), Fq::N_BITS);
@@ -256,9 +256,9 @@ impl Fq2 {
 
     pub fn mul_by_constant_fq_montgomery(
         circuit: &mut Circuit,
-        a: &Pair<BigIntWires>,
+        a: &Fq2Element<BigIntWires>,
         b: &ark_bn254::Fq,
-    ) -> Pair<BigIntWires> {
+    ) -> Fq2Element<BigIntWires> {
         assert_eq!(a.0.len(), Self::N_BITS / 2);
         assert_eq!(a.1.len(), Self::N_BITS / 2);
 
@@ -272,7 +272,7 @@ impl Fq2 {
         circuit: &mut Circuit,
         a: &ark_bn254::Fq2,
         b: &BigIntWires,
-    ) -> Pair<BigIntWires> {
+    ) -> Fq2Element<BigIntWires> {
         assert_eq!(b.len(), Fq::N_BITS);
 
         let c0 = Fq::mul_by_constant_montgomery(circuit, b, &a.c0);
@@ -281,7 +281,7 @@ impl Fq2 {
         (c0, c1)
     }
 
-    pub fn mul_by_nonresidue(circuit: &mut Circuit, a: &Pair<BigIntWires>) -> Pair<BigIntWires> {
+    pub fn mul_by_nonresidue(circuit: &mut Circuit, a: &Fq2Element<BigIntWires>) -> Fq2Element<BigIntWires> {
         assert_eq!(a.0.len(), Self::N_BITS / 2);
         assert_eq!(a.1.len(), Self::N_BITS / 2);
 
@@ -298,7 +298,7 @@ impl Fq2 {
         (c0, c1)
     }
 
-    pub fn square_montgomery(circuit: &mut Circuit, a: &Pair<BigIntWires>) -> Pair<BigIntWires> {
+    pub fn square_montgomery(circuit: &mut Circuit, a: &Fq2Element<BigIntWires>) -> Fq2Element<BigIntWires> {
         assert_eq!(a.0.len(), Self::N_BITS / 2);
         assert_eq!(a.1.len(), Self::N_BITS / 2);
 
@@ -313,7 +313,7 @@ impl Fq2 {
         (c0, c1)
     }
 
-    pub fn inverse_montgomery(circuit: &mut Circuit, a: &Pair<BigIntWires>) -> Pair<BigIntWires> {
+    pub fn inverse_montgomery(circuit: &mut Circuit, a: &Fq2Element<BigIntWires>) -> Fq2Element<BigIntWires> {
         assert_eq!(a.0.len(), Self::N_BITS / 2);
         assert_eq!(a.1.len(), Self::N_BITS / 2);
 
@@ -332,9 +332,9 @@ impl Fq2 {
 
     pub fn frobenius_montgomery(
         circuit: &mut Circuit,
-        a: &Pair<BigIntWires>,
+        a: &Fq2Element<BigIntWires>,
         i: usize,
-    ) -> Pair<BigIntWires> {
+    ) -> Fq2Element<BigIntWires> {
         assert_eq!(a.0.len(), Self::N_BITS / 2);
         assert_eq!(a.1.len(), Self::N_BITS / 2);
 
@@ -350,7 +350,7 @@ impl Fq2 {
         (a.0.clone(), c1)
     }
 
-    pub fn div6(circuit: &mut Circuit, a: &Pair<BigIntWires>) -> Pair<BigIntWires> {
+    pub fn div6(circuit: &mut Circuit, a: &Fq2Element<BigIntWires>) -> Fq2Element<BigIntWires> {
         assert_eq!(a.0.len(), Self::N_BITS / 2);
         assert_eq!(a.1.len(), Self::N_BITS / 2);
 
@@ -376,9 +376,9 @@ impl Fq2 {
     // Special case: c1 == 0, not used in real case, just for testing
     pub fn sqrt_c1_zero_montgomery(
         circuit: &mut Circuit,
-        a: &Pair<BigIntWires>,
+        a: &Fq2Element<BigIntWires>,
         is_qr: WireId,
-    ) -> Pair<BigIntWires> {
+    ) -> Fq2Element<BigIntWires> {
         let c0_sqrt = Fq::sqrt_montgomery(circuit, &a.0);
         let c0_neg = Fq::neg(circuit, &a.0);
         let c1_sqrt = Fq::sqrt_montgomery(circuit, &c0_neg);
@@ -392,7 +392,7 @@ impl Fq2 {
     }
 
     // General case: c1 != 0
-    pub fn sqrt_general_montgomery(circuit: &mut Circuit, a: &Pair<BigIntWires>) -> Pair<BigIntWires> {
+    pub fn sqrt_general_montgomery(circuit: &mut Circuit, a: &Fq2Element<BigIntWires>) -> Fq2Element<BigIntWires> {
         let alpha = Self::norm_montgomery(circuit, &a.0, &a.1); // c0² + c1²
         let alpha_sqrt = Fq::sqrt_montgomery(circuit, &alpha); // sqrt(norm)
 
