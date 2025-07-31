@@ -105,8 +105,8 @@ impl Fq2 {
 
     pub fn add(
         circuit: &mut Circuit,
-        a: Pair<BigIntWires>,
-        b: Pair<BigIntWires>,
+        a: &Pair<BigIntWires>,
+        b: &Pair<BigIntWires>,
     ) -> Pair<BigIntWires> {
         assert_eq!(a.0.len(), Self::N_BITS / 2);
         assert_eq!(b.0.len(), Self::N_BITS / 2);
@@ -180,7 +180,7 @@ impl Fq2 {
 
         let a_2 = Self::double(circuit, a);
 
-        Self::add(circuit, (a.0.clone(), a.1.clone()), a_2)
+        Self::add(circuit, &a, &a_2)
     }
 
     pub fn mul_montgomery(
@@ -438,7 +438,7 @@ mod tests {
         let mut circuit = Circuit::default();
         let a_wires = Fq2::new_bn(&mut circuit, true, false);
         let b_wires = Fq2::new_bn(&mut circuit, true, false);
-        let c_wires = Fq2::add(&mut circuit, a_wires.clone(), b_wires.clone());
+        let c_wires = Fq2::add(&mut circuit, &a_wires, &b_wires);
 
         c_wires.0.mark_as_output(&mut circuit);
         c_wires.1.mark_as_output(&mut circuit);

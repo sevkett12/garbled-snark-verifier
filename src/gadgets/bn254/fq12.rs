@@ -181,7 +181,7 @@ impl Fq12 {
         let w3 = Fq6::mul_by_fq2_montgomery(circuit, &a.0, &c0);
         let new_c0 = Fq6::add(circuit, &w2, &w3);
         let w4 = Fq6::add(circuit, &a.0, &a.1);
-        let w5 = Fq2::add(circuit, c3.clone(), c0.clone());
+        let w5 = Fq2::add(circuit, &c3, &c0);
         let w6 = Fq6::mul_by_01_montgomery(circuit, &w4, &w5, &c4);
         let w7 = Fq6::add(circuit, &w1, &w3);
         let new_c1 = Fq6::sub(circuit, &w6, &w7);
@@ -194,7 +194,7 @@ impl Fq12 {
         let w3 = Fq6::mul_by_fq2_montgomery(circuit, &a.0, &c0);
         let new_c0 = Fq6::add(circuit, &w2, &w3);
         let w4 = Fq6::add(circuit, &a.0, &a.1);
-        let w5 = Fq2::add(circuit, c3.clone(), c0.clone());
+        let w5 = Fq2::add(circuit, &c3, &c0);
         let w6 = Fq6::mul_by_01_constant1_montgomery(circuit, &w4, &w5, &c4);
         let w7 = Fq6::add(circuit, &w1, &w3);
         let new_c1 = Fq6::sub(circuit, &w6, &w7);
@@ -226,59 +226,59 @@ impl Fq12 {
         let c5 = a.1[2].clone();
 
         let xy = Fq2::mul_montgomery(circuit, &c0, &c4);
-        let x_plus_y = Fq2::add(circuit, c0.clone(), c4.clone());
+        let x_plus_y = Fq2::add(circuit, &c0, &c4);
         let y_beta = Fq2::mul_by_nonresidue(circuit, &c4);
-        let x_plus_y_beta = Fq2::add(circuit, c0.clone(), y_beta);
+        let x_plus_y_beta = Fq2::add(circuit, &c0, &y_beta);
         let xy_beta = Fq2::mul_by_nonresidue(circuit, &xy);
         let w1 = Fq2::mul_montgomery(circuit, &x_plus_y, &x_plus_y_beta);
-        let w2 = Fq2::add(circuit, xy.clone(), xy_beta);
+        let w2 = Fq2::add(circuit, &xy, &xy_beta);
         let t0 = Fq2::sub(circuit, &w1, &w2);
         let t1 = Fq2::double(circuit, &xy);
 
         let xy = Fq2::mul_montgomery(circuit, &c2, &c3);
-        let x_plus_y = Fq2::add(circuit, c2.clone(), c3.clone());
+        let x_plus_y = Fq2::add(circuit, &c2, &c3);
         let y_beta = Fq2::mul_by_nonresidue(circuit, &c2);
-        let x_plus_y_beta = Fq2::add(circuit, c3.clone(), y_beta);
+        let x_plus_y_beta = Fq2::add(circuit, &c3, &y_beta);
         let xy_beta = Fq2::mul_by_nonresidue(circuit, &xy);
         let w1 = Fq2::mul_montgomery(circuit, &x_plus_y, &x_plus_y_beta);
-        let w2 = Fq2::add(circuit, xy.clone(), xy_beta);
+        let w2 = Fq2::add(circuit, &xy, &xy_beta);
         let t2 = Fq2::sub(circuit, &w1, &w2);
         let t3 = Fq2::double(circuit, &xy);
 
         let xy = Fq2::mul_montgomery(circuit, &c1, &c5);
-        let x_plus_y = Fq2::add(circuit, c1.clone(), c5.clone());
+        let x_plus_y = Fq2::add(circuit, &c1, &c5);
         let y_beta = Fq2::mul_by_nonresidue(circuit, &c5);
-        let x_plus_y_beta = Fq2::add(circuit, c1.clone(), y_beta);
+        let x_plus_y_beta = Fq2::add(circuit, &c1, &y_beta);
         let xy_beta = Fq2::mul_by_nonresidue(circuit, &xy);
         let w1 = Fq2::mul_montgomery(circuit, &x_plus_y, &x_plus_y_beta);
-        let w2 = Fq2::add(circuit, xy.clone(), xy_beta);
+        let w2 = Fq2::add(circuit, &xy, &xy_beta);
         let t4 = Fq2::sub(circuit, &w1, &w2);
         let t5 = Fq2::double(circuit, &xy);
 
         let w1 = Fq2::sub(circuit, &t0, &c0);
         let w2 = Fq2::double(circuit, &w1);
-        let z0 = Fq2::add(circuit, w2, t0);
+        let z0 = Fq2::add(circuit, &w2, &t0);
 
         let w1 = Fq2::sub(circuit, &t2, &c1);
         let w2 = Fq2::double(circuit, &w1);
-        let z4 = Fq2::add(circuit, w2, t2);
+        let z4 = Fq2::add(circuit, &w2, &t2);
 
         let w1 = Fq2::sub(circuit, &t4, &c2);
         let w2 = Fq2::double(circuit, &w1);
-        let z3 = Fq2::add(circuit, w2, t4);
+        let z3 = Fq2::add(circuit, &w2, &t4);
 
         let t5_beta = Fq2::mul_by_nonresidue(circuit, &t5);
         let w1 = Fq2::sub(circuit, &t5_beta, &c3);
         let w2 = Fq2::double(circuit, &w1);
-        let z2 = Fq2::add(circuit, w2, t5_beta);
+        let z2 = Fq2::add(circuit, &w2, &t5_beta);
 
         let w1 = Fq2::sub(circuit, &t1, &c4);
         let w2 = Fq2::double(circuit, &w1);
-        let z1 = Fq2::add(circuit, w2, t1);
+        let z1 = Fq2::add(circuit, &w2, &t1);
 
         let w1 = Fq2::sub(circuit, &t3, &c5);
         let w2 = Fq2::double(circuit, &w1);
-        let z5 = Fq2::add(circuit, w2, t3);
+        let z5 = Fq2::add(circuit, &w2, &t3);
         ([z0, z4, z3], [z2, z1, z5])
     }
 
