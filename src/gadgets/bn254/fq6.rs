@@ -832,7 +832,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore] // Ignore due to broken Fq inverse implementation
     fn test_fq6_inverse_montgomery() {
         let mut circuit = Circuit::default();
         let a_wires = Fq6::new_bn(&mut circuit, true, false);
