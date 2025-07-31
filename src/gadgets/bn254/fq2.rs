@@ -11,6 +11,11 @@ use crate::{
 
 pub type Fq2Element<T> = (T, T);
 
+pub fn fq2element_mark_as_output(circuit: &mut Circuit, a: &Fq2Element<BigIntWires>) {
+    a.0.mark_as_output(circuit);
+    a.1.mark_as_output(circuit);
+}
+
 pub struct Fq2;
 
 impl Fq2 {
@@ -131,7 +136,7 @@ impl Fq2 {
         )
     }
 
-    pub fn neg(circuit: &mut Circuit, a: Fq2Element<BigIntWires>) -> Fq2Element<BigIntWires> {
+    pub fn neg(circuit: &mut Circuit, a: &Fq2Element<BigIntWires>) -> Fq2Element<BigIntWires> {
         assert_eq!(a.0.len(), Self::N_BITS / 2);
         assert_eq!(a.1.len(), Self::N_BITS / 2);
 
@@ -440,8 +445,7 @@ mod tests {
         let b_wires = Fq2::new_bn(&mut circuit, true, false);
         let c_wires = Fq2::add(&mut circuit, &a_wires, &b_wires);
 
-        c_wires.0.mark_as_output(&mut circuit);
-        c_wires.1.mark_as_output(&mut circuit);
+        fq2element_mark_as_output(&mut circuit, &c_wires);
 
         let a_val = Fq2::random();
         let b_val = Fq2::random();
@@ -463,10 +467,9 @@ mod tests {
     fn test_fq2_neg() {
         let mut circuit = Circuit::default();
         let a_wires = Fq2::new_bn(&mut circuit, true, false);
-        let c_wires = Fq2::neg(&mut circuit, a_wires.clone());
+        let c_wires = Fq2::neg(&mut circuit, &a_wires);
 
-        c_wires.0.mark_as_output(&mut circuit);
-        c_wires.1.mark_as_output(&mut circuit);
+        fq2element_mark_as_output(&mut circuit, &c_wires);
 
         let a_val = Fq2::random();
         let expected = -a_val;
@@ -489,8 +492,7 @@ mod tests {
         let b_wires = Fq2::new_bn(&mut circuit, true, false);
         let c_wires = Fq2::sub(&mut circuit, &a_wires, &b_wires);
 
-        c_wires.0.mark_as_output(&mut circuit);
-        c_wires.1.mark_as_output(&mut circuit);
+        fq2element_mark_as_output(&mut circuit, &c_wires);
 
         let a_val = Fq2::random();
         let b_val = Fq2::random();
@@ -514,8 +516,7 @@ mod tests {
         let a_wires = Fq2::new_bn(&mut circuit, true, false);
         let c_wires = Fq2::double(&mut circuit, &a_wires);
 
-        c_wires.0.mark_as_output(&mut circuit);
-        c_wires.1.mark_as_output(&mut circuit);
+        fq2element_mark_as_output(&mut circuit, &c_wires);
 
         let a_val = Fq2::random();
         let expected = a_val + a_val;
@@ -537,8 +538,7 @@ mod tests {
         let a_wires = Fq2::new_bn(&mut circuit, true, false);
         let c_wires = Fq2::triple(&mut circuit, &a_wires);
 
-        c_wires.0.mark_as_output(&mut circuit);
-        c_wires.1.mark_as_output(&mut circuit);
+        fq2element_mark_as_output(&mut circuit, &c_wires);
 
         let a_val = Fq2::random();
         let expected = a_val + a_val + a_val;
@@ -561,8 +561,7 @@ mod tests {
         let b_wires = Fq2::new_bn(&mut circuit, true, false);
         let c_wires = Fq2::mul_montgomery(&mut circuit, &a_wires, &b_wires);
 
-        c_wires.0.mark_as_output(&mut circuit);
-        c_wires.1.mark_as_output(&mut circuit);
+        fq2element_mark_as_output(&mut circuit, &c_wires);
 
         let a_val = Fq2::random();
         let b_val = Fq2::random();
@@ -590,8 +589,7 @@ mod tests {
         let c_wires =
             Fq2::mul_by_constant_montgomery(&mut circuit, &a_wires, &Fq2::as_montgomery(b_val));
 
-        c_wires.0.mark_as_output(&mut circuit);
-        c_wires.1.mark_as_output(&mut circuit);
+        fq2element_mark_as_output(&mut circuit, &c_wires);
 
         let expected = Fq2::as_montgomery(a_val * b_val);
 
@@ -613,8 +611,7 @@ mod tests {
         let b_wires = Fq::new_bn(&mut circuit, true, false);
         let c_wires = Fq2::mul_by_fq_montgomery(&mut circuit, &a_wires, &b_wires);
 
-        c_wires.0.mark_as_output(&mut circuit);
-        c_wires.1.mark_as_output(&mut circuit);
+        fq2element_mark_as_output(&mut circuit, &c_wires);
 
         let a_val = Fq2::random();
         let b_val = crate::gadgets::bn254::fq::tests::rnd();
@@ -642,8 +639,7 @@ mod tests {
         let c_wires =
             Fq2::mul_by_constant_fq_montgomery(&mut circuit, &a_wires, &Fq::as_montgomery(b_val));
 
-        c_wires.0.mark_as_output(&mut circuit);
-        c_wires.1.mark_as_output(&mut circuit);
+        fq2element_mark_as_output(&mut circuit, &c_wires);
 
         let expected = Fq2::as_montgomery(a_val * ark_bn254::Fq2::new(b_val, ark_bn254::Fq::ZERO));
 
@@ -664,8 +660,7 @@ mod tests {
         let a_wires = Fq2::new_bn(&mut circuit, true, false);
         let c_wires = Fq2::mul_by_nonresidue(&mut circuit, &a_wires);
 
-        c_wires.0.mark_as_output(&mut circuit);
-        c_wires.1.mark_as_output(&mut circuit);
+        fq2element_mark_as_output(&mut circuit, &c_wires);
 
         let a_val = Fq2::random();
         let expected = ark_bn254::Fq6Config::mul_fp2_by_nonresidue(a_val);
@@ -687,8 +682,7 @@ mod tests {
         let a_wires = Fq2::new_bn(&mut circuit, true, false);
         let c_wires = Fq2::square_montgomery(&mut circuit, &a_wires);
 
-        c_wires.0.mark_as_output(&mut circuit);
-        c_wires.1.mark_as_output(&mut circuit);
+        fq2element_mark_as_output(&mut circuit, &c_wires);
 
         let a_val = Fq2::random();
         let expected = Fq2::as_montgomery(a_val * a_val);
@@ -710,8 +704,7 @@ mod tests {
         let a_wires = Fq2::new_bn(&mut circuit, true, false);
         let c_wires = Fq2::inverse_montgomery(&mut circuit, &a_wires);
 
-        c_wires.0.mark_as_output(&mut circuit);
-        c_wires.1.mark_as_output(&mut circuit);
+        fq2element_mark_as_output(&mut circuit, &c_wires);
 
         let a_val = Fq2::random();
         let expected = Fq2::as_montgomery(a_val.inverse().unwrap());
@@ -740,8 +733,7 @@ mod tests {
             let a_wires = Fq2::new_bn(&mut circuit, true, false);
             let c_wires = Fq2::frobenius_montgomery(&mut circuit, &a_wires, 0);
 
-            c_wires.0.mark_as_output(&mut circuit);
-            c_wires.1.mark_as_output(&mut circuit);
+            fq2element_mark_as_output(&mut circuit, &c_wires);
 
             let expected = Fq2::as_montgomery(a_val.frobenius_map(0));
 
@@ -762,8 +754,7 @@ mod tests {
             let a_wires = Fq2::new_bn(&mut circuit, true, false);
             let c_wires = Fq2::frobenius_montgomery(&mut circuit, &a_wires, 1);
 
-            c_wires.0.mark_as_output(&mut circuit);
-            c_wires.1.mark_as_output(&mut circuit);
+            fq2element_mark_as_output(&mut circuit, &c_wires);
 
             let expected = Fq2::as_montgomery(a_val.frobenius_map(1));
 
@@ -785,8 +776,7 @@ mod tests {
         let a_wires = Fq2::new_bn(&mut circuit, true, false);
         let c_wires = Fq2::div6(&mut circuit, &a_wires);
 
-        c_wires.0.mark_as_output(&mut circuit);
-        c_wires.1.mark_as_output(&mut circuit);
+        fq2element_mark_as_output(&mut circuit, &c_wires);
 
         let a_val = Fq2::random();
         let expected = a_val / ark_bn254::Fq2::from(6u32);
@@ -833,8 +823,7 @@ mod tests {
         let is_qr_wires = circuit.issue_input_wire();
         let c_wires = Fq2::sqrt_c1_zero_montgomery(&mut circuit, &a_wires, is_qr_wires);
 
-        c_wires.0.mark_as_output(&mut circuit);
-        c_wires.1.mark_as_output(&mut circuit);
+        fq2element_mark_as_output(&mut circuit, &c_wires);
 
         let mut r_val = Fq2::random();
         r_val.c1 = ark_bn254::Fq::ZERO;
@@ -860,15 +849,14 @@ mod tests {
         let r = Fq2::random();
         let rr = r * r;
     
-        let c = Fq2::sqrt_general_montgomery(&mut circuit, &a_wires);
+        let c_wires = Fq2::sqrt_general_montgomery(&mut circuit, &a_wires);
     
-        c.0.mark_as_output(&mut circuit);
-        c.1.mark_as_output(&mut circuit);
+        fq2element_mark_as_output(&mut circuit, &c_wires);
     
         let expected = rr.sqrt().unwrap();
     
         let a_input = Fq2::get_wire_bits_fn(&a_wires, &Fq2::as_montgomery(rr)).unwrap();
-        let c_output = Fq2::get_wire_bits_fn(&c, &Fq2::as_montgomery(expected)).unwrap();
+        let c_output = Fq2::get_wire_bits_fn(&c_wires, &Fq2::as_montgomery(expected)).unwrap();
     
         circuit
             .simple_evaluate(|wire_id| (a_input)(wire_id))
